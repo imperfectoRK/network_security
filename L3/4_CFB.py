@@ -4,7 +4,7 @@ from Crypto.Random import get_random_bytes
 block_size = 16
 
 key = b"midsem is coming"
-iv  = get_random_bytes(16)
+iv  = b"start  preparing"
 
 def encrypt(pt):
     cipher = AES.new(key, AES.MODE_CFB, iv=iv, segment_size=128)
@@ -37,15 +37,19 @@ print("\n 2nd  attacker flips bits  ")
 ct_mod = bytearray(ct)
 
 # change quota=100 -> quota=900
-idx = pt.index(b"100")
+
 
 # '1' -> '9'
-ct_mod[idx] ^= 0x08
+idx = pt.index(b"100")
+original = ord('1')      
+desired  = ord('9')      
+XOR_value = ord('1') ^ ord('9')
+ct_mod[idx] ^= XOR_value
 
-tampered_ct = bytes(ct_mod)
+modifiedCT = bytes(ct_mod)
 
 
 print("\n 3rd victim decrypts  ")
 
-tampered_pt = decrypt(tampered_ct)
-print("tampered plaintext:", tampered_pt)
+modifiedPT = decrypt(modifiedCT)
+print("modified plaintext:", modifiedPT)
