@@ -21,15 +21,58 @@ cipher_dec = AES.new(key, AES.MODE_CBC, iv)
 
 
 
+# encryption function 
 def encryptfun(paddedPT):
-    cipher_enc = AES.new(key, AES.MODE_CBC, iv)
-    return cipher_enc.encrypt(paddedPT)
+
+    # split plaintext into blocks
+    blocks = []
+    for i in range(0, len(paddedPT), block_size):
+        blocks.append(paddedPT[i:i+block_size])
+
+    prev = iv
+    cblocks = []
+
+    for b in blocks:
+
+        # XOR plaintext block with previous ciphertext 
+        xored = bytes([b[i] ^ prev[i] for i in range(block_size)])
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        c = cipher.encrypt(xored)
+
+        cblocks.append(c)
+
+        prev = c   
+
+    return b"".join(cblocks)
 
 
+
+# decryption function 
 def decryptfun(ciphertext):
-    cipher_dec = AES.new(key, AES.MODE_CBC, iv)
-    plaintext = cipher_dec.decrypt(ciphertext)
-    return unpad(plaintext)
+
+    # split ciphertext into blocks
+    blocks = []
+    for i in range(0, len(ciphertext), block_size):
+        blocks.append(ciphertext[i:i+block_size])
+
+    prev = iv
+    pblocks = []
+
+    for b in blocks:
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        decrypted = cipher.decrypt(b)
+
+        # XOR with previous ciphertext 
+        p = bytes([decrypted[i] ^ prev[i] for i in range(block_size)])
+
+        pblocks.append(p)
+
+        prev = b  
+
+    return unpad(b"".join(pblocks))
+
 
 
 
@@ -65,15 +108,12 @@ index = pt.index(b"1000") - block_size
 
 
 # locating position of '1' in "1000"
+# we need to flip
 # flip '1' → '9' using xor
-
 # get ASCII
 original = ord('1')      # 0x31
 desired  = ord('9')      # 0x39
-
-# we need to flip
 XOR_value = ord('1') ^ ord('9')
-
 ct[index] ^= XOR_value
 
 
