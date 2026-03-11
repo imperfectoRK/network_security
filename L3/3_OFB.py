@@ -3,14 +3,62 @@ from Crypto.Random import get_random_bytes
 
 key = b"midsem is coming"
 iv  = b"start  preparing"
+block_size = 16
 
+# encryption function 
 def encrypt(pt):
-    cipher = AES.new(key, AES.MODE_OFB, iv=iv)
-    return cipher.encrypt(pt)
 
+    # split plaintext into blocks
+    blocks = []
+    for i in range(0, len(pt), block_size):
+        blocks.append(pt[i:i+block_size])
+
+    prev = iv
+    cblocks = []
+
+    for b in blocks:
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        ofb_block = cipher.encrypt(prev)   
+
+        # XOR plaintext block with keystream
+        c = bytes([b[i] ^ ofb_block[i] for i in range(len(b))])
+
+        cblocks.append(c)
+
+        prev = ofb_block   
+
+    return b"".join(cblocks)
+
+
+
+# decryption function 
 def decrypt(ct):
-    cipher = AES.new(key, AES.MODE_OFB, iv=iv)
-    return cipher.decrypt(ct)
+
+    # split ciphertext into blocks
+    blocks = []
+    for i in range(0, len(ct), block_size):
+        blocks.append(ct[i:i+block_size])
+
+    prev = iv
+    pblocks = []
+
+    for b in blocks:
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        ofb_block = cipher.encrypt(prev)   
+
+        # XOR ciphertext block with keystream
+        p = bytes([b[i] ^ ofb_block[i] for i in range(len(b))])
+
+        pblocks.append(p)
+
+        prev = ofb_block   
+
+    return b"".join(pblocks)
+
+
+
 
 
 print("\n  ofb pattern test  ")
