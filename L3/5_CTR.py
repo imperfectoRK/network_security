@@ -2,15 +2,67 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
 key = b"midsem is coming"
-nonce = get_random_bytes(8)
 
+
+block_size = 16
+
+
+# encryption function 
 def encrypt(pt):
-    cipher = AES.new(key, AES.MODE_CTR, nonce=nonce)
-    return cipher.encrypt(pt)
 
+    blocks = []
+    for i in range(0, len(pt), block_size):
+        blocks.append(pt[i:i+block_size])
+
+    cblocks = []
+    counter = 0
+
+    for b in blocks:
+
+        # create 16-byte counter block
+        counter_block = counter.to_bytes(16, 'big')
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        keystream = cipher.encrypt(counter_block)
+
+        # XOR plaintext with keystream
+        c = bytes([b[i] ^ keystream[i] for i in range(len(b))])
+
+        cblocks.append(c)
+
+        counter += 1
+
+    return b"".join(cblocks)
+
+
+
+# decryption function 
 def decrypt(ct):
-    cipher = AES.new(key, AES.MODE_CTR, nonce=nonce)
-    return cipher.decrypt(ct)
+
+    blocks = []
+    for i in range(0, len(ct), block_size):
+        blocks.append(ct[i:i+block_size])
+
+    pblocks = []
+    counter = 0
+
+    for b in blocks:
+
+        counter_block = counter.to_bytes(16, 'big')
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        keystream = cipher.encrypt(counter_block)
+
+        # XOR ciphertext with keystream
+        p = bytes([b[i] ^ keystream[i] for i in range(len(b))])
+
+        pblocks.append(p)
+
+        counter += 1
+
+    return b"".join(pblocks)
+
+
 
 
 print("\n  ctr pattern test  ")
@@ -24,7 +76,7 @@ print(ct[16:32])
 
 print("\n1st original message  ")
 
-pt = b"user=rahul;role=user;cmd=view;limit=10;"
+pt = b"user=rahul;role=user;cmd=view;limit=10;byebye"
 ct = encrypt(pt)
 
 print("plaintext:", pt)
@@ -48,10 +100,10 @@ ct_mod[idx_cmd+1] ^= ord("i") ^ ord("i")
 ct_mod[idx_cmd+2] ^= ord("e") ^ ord("l")
 ct_mod[idx_cmd+3] ^= ord("w") ^ ord("l")
 
-tampered_ct = bytes(ct_mod)
+modifiedCT = bytes(ct_mod)
 
 
 print("\n 3rd victim decrypts  ")
 
-tampered_pt = decrypt(tampered_ct)
-print("tampered plaintext:", tampered_pt)
+modifiedPT = decrypt(modifiedCT)
+print("tampered plaintext:", modifiedPT)
