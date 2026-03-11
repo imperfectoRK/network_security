@@ -6,13 +6,59 @@ block_size = 16
 key = b"midsem is coming"
 iv  = b"start  preparing"
 
-def encrypt(pt):
-    cipher = AES.new(key, AES.MODE_CFB, iv=iv, segment_size=128)
-    return cipher.encrypt(pt)
 
+
+# encryption function 
+def encrypt(pt):
+
+    blocks = []
+    for i in range(0, len(pt), block_size):
+        blocks.append(pt[i:i+block_size])
+
+    prev = iv
+    cblocks = []
+
+    for b in blocks:
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        keystream = cipher.encrypt(prev)
+
+        # XOR plaintext with keystream
+        c = bytes([b[i] ^ keystream[i] for i in range(len(b))])
+
+        cblocks.append(c)
+
+        prev = c   
+
+    return b"".join(cblocks)
+
+
+
+# decryption function 
 def decrypt(ct):
-    cipher = AES.new(key, AES.MODE_CFB, iv=iv, segment_size=128)
-    return cipher.decrypt(ct)
+
+    blocks = []
+    for i in range(0, len(ct), block_size):
+        blocks.append(ct[i:i+block_size])
+
+    prev = iv
+    pblocks = []
+
+    for b in blocks:
+
+        cipher = AES.new(key, AES.MODE_ECB)
+        keystream = cipher.encrypt(prev)
+
+        # XOR ciphertext with keystream
+        p = bytes([b[i] ^ keystream[i] for i in range(len(b))])
+
+        pblocks.append(p)
+
+        prev = b   
+
+    return b"".join(pblocks)
+
+
 
 
 print("\n  cfb pattern test  ")
@@ -26,7 +72,7 @@ print(ct[16:32])
 
 print("\n1st original message  ")
 
-pt = b"user=rahul;plan=basic;quota=100;"
+pt = b"user=rahul;plan=basic;quota=100;skfhkhsfkhsk"
 ct = encrypt(pt)
 
 print("plaintext:", pt)
