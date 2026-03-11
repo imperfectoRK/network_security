@@ -2,11 +2,13 @@ from Crypto.Cipher import AES
 block_size = 16
 
 def pad(data):
-    padLength = block_size - (len(data) % block_size)
-    return data + bytes([padLength]) * padLength
+     padLength=block_size-(len(data)%block_size) 
+     padding=bytes([padLength])*padLength 
+     return data+padding 
 
 def unpad(data):
-    return data[:-data[-1]]
+     padlength=data[-1] 
+     return data[:-padlength]
 
 
 
@@ -45,6 +47,17 @@ def decryptfun(ciphertext):
 
 
 
+print("\n ECB pattern test ")
+
+test_pt = b"A" * 32        # two identical blocks
+test_padded = pad(test_pt)
+
+ct = encryptfun(test_padded)
+
+print(ct[:16])
+print(ct[16:32])   # TRUE (same blocks in ECB)
+
+
 
 
 
@@ -69,7 +82,7 @@ adminCT = encryptfun(pad(adminPT))
 
 
 
-print("\n 3rd attacker cuts and pastes blocks  ")
+print("\n 3rd cuts and pastes blocks  ")
 print("replacing role=user with ==> role=admin block")
 # split sender ciphertext
 sender_blocks = []
