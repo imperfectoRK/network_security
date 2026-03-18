@@ -4,7 +4,7 @@ from Crypto.Random import get_random_bytes
 block_size = 16
 
 key = b"midsem is coming"
-iv  = b"start  preparing"
+iv  = b"start  preparing"# size 16
 
 
 
@@ -72,7 +72,7 @@ print(ct[16:32])
 
 print("\n1st original message  ")
 
-pt = b"user=rahul;plan=basic;quota=100;skfhkhsfkhsk"
+pt = b"user=rahul;plan=basic;quota=100;abcdefghihjklmno_COMEBACK" #16( a to o)
 ct = encrypt(pt)
 
 print("plaintext:", pt)
