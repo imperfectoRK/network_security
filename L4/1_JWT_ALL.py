@@ -26,7 +26,7 @@ def create_jwt(payload, secret):
 
     message = header_b64 + b'.' + payload_b64
 
-    signature = hmac.new(
+    signature = hmac.new( # creating signature
         secret.encode(),
         message,
         hashlib.sha256
@@ -88,7 +88,7 @@ def verify_jwt(token, secret):
 
 
 
-secret = "iHaveToDoITAnyHow"
+secret = "idk"
 
 payload = {
     "user_id": 1,
@@ -159,10 +159,14 @@ with open("wordlist.txt", "r") as file:
         signature_test = base64url_encode(signature)
 
         print("Trying:", secret_bruteforce)
-
+        flag=0
         if signature_test.decode() == signature_b64:
             print("Secret Found:", secret_bruteforce)
+            flag=1
             break
+        
+
+
 # now we gor the key we perform the attack
 
 payload = {
@@ -173,10 +177,11 @@ payload = {
 
 token3rd = create_jwt(payload, secret_bruteforce) #using bruteforce secret key
 
-
-print("\nTOKEN:", token3rd)
-
-print("\nVerification output:", verify_jwt(token3rd, secret_bruteforce))
+if(flag!=1):
+    print("\n \n not found so cannot auth")
+else:    
+    print("\nTOKEN:", token3rd)
+    print("\nVerification output:", verify_jwt(token3rd, secret_bruteforce))
 
 
 
@@ -188,13 +193,37 @@ print("\nREplay\nVerification output:", verify_jwt(token3rd, secret_bruteforce))
 
 
 
-#token expire
+#token expire case
+
 time.sleep(1)
 print("\nToken not Expired\nVerification output:", verify_jwt(token3rd, secret_bruteforce))
 
-time.sleep(5)
+time.sleep(2)
 
 
 print("\nTK expired\nVerification output:", verify_jwt(token3rd, secret_bruteforce))
 
 
+
+
+
+
+
+#comparision
+print("\n\n==> Now Comparision :")
+import time
+
+payload = {
+    "user_id": 1,
+    "role": "admin",
+    "exp": int(time.time()) + 20
+}
+
+start = time.time()
+
+
+token = create_jwt(payload, secret)
+verify_jwt(token, secret)
+# print("\nVERIFY:", verify_jwt(token, secret))
+
+print("Symmetric time:", (time.time() - start)*1000000)
